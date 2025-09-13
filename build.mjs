@@ -31,7 +31,7 @@ async function build() {
       const content = await fs.readFile(sourcePath, 'utf-8');
 
       const defaultTitle = '🚀 Join The Sprint!';
-      const defaultDescription = '🔥 La tua sfida di 24 ore per il successo online! 💰';
+      const defaultDescription = '🔥 Your 24-hour challenge for online success! 💰';
 
       // Extract title and description
       const titleMatch = content.match(/<title>(.*?)<\/title>/);
