@@ -2,6 +2,7 @@ import indexHtml from './../index.html';
 import privacyHtml from './../privacy.html';
 import termsHtml from './../terms.html';
 import disclaimerHtml from './../disclaimer.html';
+import pdfHtml from './../pdf.html';
 
 export default {
   async fetch(request) {
