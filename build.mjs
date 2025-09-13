@@ -30,9 +30,15 @@ async function build() {
       const sourcePath = path.join(rootDir, file);
       const content = await fs.readFile(sourcePath, 'utf-8');
 
-      // Extract title
+      const defaultTitle = 'Join The Sprint';
+      const defaultDescription = 'La tua sfida di 24 ore per il successo online!';
+
+      // Extract title and description
       const titleMatch = content.match(/<title>(.*?)<\/title>/);
-      const title = titleMatch ? titleMatch[1] : 'Join The Sprint';
+      const title = titleMatch ? titleMatch[1] : defaultTitle;
+
+      const descriptionMatch = content.match(/<meta name="description" content="(.*?)">/);
+      const description = descriptionMatch ? descriptionMatch[1] : defaultDescription;
 
       // Generate OG tags
       const pageUrl = `${baseUrl}/${file.replace('.html', '')}`;
@@ -41,7 +47,7 @@ async function build() {
       const ogTags = `
         <!-- Open Graph Tags (auto-generated) -->
         <meta property="og:title" content="${title}" />
-        <meta property="og:description" content="${title}" />
+        <meta property="og:description" content="${description}" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="${pageUrl}" />
         <meta property="og:image" content="${imageUrl}" />
