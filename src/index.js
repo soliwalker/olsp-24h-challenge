@@ -28,6 +28,10 @@ export default {
         headers: { 'Content-Type': 'text/html' },
       });
     }
+    if (path === '/' || path === '/pdf.html') {
+      return new Response(indexHtml, {
+        headers: { 'Content-Type': 'text/html' },
+      });
 
     return new Response('Not Found', { status: 404 });
   },
