@@ -28,7 +28,7 @@ export default {
         headers: { 'Content-Type': 'text/html' },
       });
     }
-    if (path === '/' || path === '/pdf.html') {
+    if (path === '/pdf' || path === '/pdf.html') {
       return new Response(indexHtml, {
         headers: { 'Content-Type': 'text/html' },
       });
