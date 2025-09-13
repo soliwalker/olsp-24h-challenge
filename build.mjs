@@ -30,19 +30,29 @@ async function build() {
       const sourcePath = path.join(rootDir, file);
       const content = await fs.readFile(sourcePath, 'utf-8');
 
-      const defaultTitle = 'Join The Sprint';
-      const defaultDescription = 'La tua sfida di 24 ore per il successo online!';
+      const defaultTitle = '🚀 Join The Sprint!';
+      const defaultDescription = '🔥 La tua sfida di 24 ore per il successo online! 💰';
 
       // Extract title and description
       const titleMatch = content.match(/<title>(.*?)<\/title>/);
-      const title = titleMatch ? titleMatch[1] : defaultTitle;
-
       const descriptionMatch = content.match(/<meta name="description" content="(.*?)">/);
-      const description = descriptionMatch ? descriptionMatch[1] : defaultDescription;
+
+      let title = (titleMatch ? titleMatch[1] : defaultTitle);
+      let description = (descriptionMatch ? descriptionMatch[1] : defaultDescription);
+
+      // Add emojis to title and description if not already present (simple check)
+      if (!/\p{Emoji}/u.test(title)) title = `🚀 ${title}`; // Add rocket emoji
+      if (!/\p{Emoji}/u.test(description)) description = `🔥 ${description} 💰`; // Add fire and money bag emojis
 
       // Generate OG tags
       const pageUrl = `${baseUrl}/${file.replace('.html', '')}`;
-      const imageUrl = `https://placehold.co/1200x630/000000/FFFFFF/png?text=${encodeURIComponent(title)}`;
+      
+      // Prepare image text for two lines and Anton font
+      const imageTextLine1 = title.length > 30 ? title.substring(0, title.lastIndexOf(' ', 30)) : title;
+      const imageTextLine2 = title.length > 30 ? title.substring(title.lastIndexOf(' ', 30) + 1) : 'Click to Discover!';
+      const encodedImageText = encodeURIComponent(`${imageTextLine1}\n${imageTextLine2}`);
+
+      const imageUrl = `https://placehold.co/1200x630/000000/FFFFFF/png?text=${encodedImageText}&font=Anton`;
 
       const ogTags = `
         <!-- Open Graph Tags (auto-generated) -->
