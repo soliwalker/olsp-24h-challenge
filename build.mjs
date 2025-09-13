@@ -42,7 +42,7 @@ async function build() {
 
       // Generate OG tags
       const pageUrl = `${baseUrl}/${file.replace('.html', '')}`;
-      const imageUrl = `https://via.placeholder.com/1200x630.png?text=${encodeURIComponent(title)}`;
+      const imageUrl = `https://placehold.co/1200x630/000000/FFFFFF/png?text=${encodeURIComponent(title)}`;
 
       const ogTags = `
         <!-- Open Graph Tags (auto-generated) -->
