@@ -30,7 +30,7 @@ export default {
       });
     }
     if (path === '/pdf' || path === '/pdf.html') {
-      return new Response(indexHtml, {
+      return new Response(pdfHtml, {
         headers: { 'Content-Type': 'text/html' },
       });
 
