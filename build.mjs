@@ -28,7 +28,7 @@ async function build() {
     // 3. Process each HTML file
     for (const file of htmlFiles) {
       const sourcePath = path.join(rootDir, file);
-      const content = await fs.readFile(sourcePath, 'utf-8');
+      let content = await fs.readFile(sourcePath, 'utf-8');
 
       const defaultTitle = '🚀 Join The Sprint!';
       const defaultDescription = '🔥 Your 24-hour challenge for online success! 💰';
@@ -39,6 +39,16 @@ async function build() {
 
       let title = (titleMatch ? titleMatch[1] : defaultTitle);
       let description = (descriptionMatch ? descriptionMatch[1] : defaultDescription);
+
+      // Auto-compose share text for index.html
+      if (file === 'index.html') {
+        const pageTitleForShare = titleMatch ? titleMatch[1] : "the 24-Hour Challenge";
+        const newShareText = `Just accepted the FREE '${pageTitleForShare}'. Who wants to join me and see if it's real? 💪 #24HourChallenge`;
+        content = content.replace(
+          /const SHARE_TEXT = ".*";/,
+          `const SHARE_TEXT = "${newShareText}";`
+        );
+      }
 
       // Add emojis to title and description if not already present (simple check)
       if (!/\p{Emoji}/u.test(title)) title = `🚀 ${title}`; // Add rocket emoji
