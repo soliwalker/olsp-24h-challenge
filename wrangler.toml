@@ -14,3 +14,8 @@ type = "Text"
 globs = ["**/*.html"]
 fallthrough = false
 
+[[rules]]
+type = "Bytes"
+globs = ["**/*.pdf"]
+fallthrough = false
+
