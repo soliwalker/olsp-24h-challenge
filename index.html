@@ -233,19 +233,20 @@
             shareModal.classList.add('hidden');
             
             // 1. Trigger the PDF download
-            // We create a temporary link and simulate a click to download the file.
+            // We create a temporary link and simulate a click. The server (worker) will
+            // force the download via Content-Disposition header.
             const downloadLink = document.createElement('a');
             downloadLink.href = CHEAT_SHEET_PDF_LINK;
-            downloadLink.download = '24-Hour-Commission-Cheat-Sheet.pdf'; // The filename for the user
+            downloadLink.download = '24-Hour-Commission-Cheat-Sheet.pdf'; // Suggests a filename
             document.body.appendChild(downloadLink);
             downloadLink.click();
             document.body.removeChild(downloadLink);
 
             // 2. Redirect to the main offer
-            // We add a small delay to ensure the download has time to start.
+            // A delay ensures the download prompt has time to appear before navigation.
             setTimeout(() => {
                 window.location.href = OLSP_AFFILIATE_LINK;
-            }, 500);
+            }, 1000);
         }
         
         // --- EVENT LISTENERS ---

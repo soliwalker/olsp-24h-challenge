@@ -8,7 +8,6 @@ routes = [
 
 [build]
 command = "npm run build"
-module_rules = [
-  { type = "Text", globs = ["**/*.html"] },
-  { type = "Bytes", globs = ["**/*.pdf"] }
-]
+
+[assets]
+directory = "./dist"
