@@ -1,3 +1,17 @@
-node_modules
-.wrangler
-dist
+# Dependencies
+/node_modules
+
+# Cloudflare Wrangler
+.wrangler/
+.dev.vars
+
+# Build artifacts
+/dist
+
+# Environment variables
+.env
+.env*.local
+
+# OS-specific
+.DS_Store
+Thumbs.db
