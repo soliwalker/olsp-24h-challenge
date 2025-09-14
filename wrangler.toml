@@ -2,20 +2,13 @@ name = "olsp-24h-challenge"
 main = "src/index.js"
 compatibility_date = "2025-09-13"
 
-[build]
-command = ""
-
 routes = [
     { pattern = "jointhesprint.co/*", zone_name = "jointhesprint.co" }
 ]
 
-[[rules]]
-type = "Text"
-globs = ["**/*.html"]
-fallthrough = false
-
-[[rules]]
-type = "Bytes"
-globs = ["**/*.pdf"]
-fallthrough = false
-
+[build]
+command = "npm run build"
+module_rules = [
+  { type = "Text", globs = ["**/*.html"] },
+  { type = "Bytes", globs = ["**/*.pdf"] }
+]
