@@ -15,34 +15,47 @@ async function build() {
     await fs.mkdir(distDir);
     console.log(`Cleaned and created '${distDir}' directory.`);
 
-    // 2. Find all HTML files in the root
+    // 2. Find all processable files in the root
     const files = await fs.readdir(rootDir);
-    const htmlFiles = files.filter(file => file.endsWith('.html'));
+    const processableFiles = files.filter(file => file.endsWith('.html') || file.endsWith('.pdf'));
 
-    if (htmlFiles.length === 0) {
-      console.log('No HTML files found. Aborting.');
+    if (processableFiles.length === 0) {
+      console.log('No processable files found. Aborting.');
       return;
     }
-    console.log(`Found ${htmlFiles.length} HTML files to process.`);
+    console.log(`Found ${processableFiles.length} files to process.`);
 
-    // 3. Process each HTML file
-    for (const file of htmlFiles) {
+    // 3. Process each file
+    for (const file of processableFiles) {
       const sourcePath = path.join(rootDir, file);
+      const destPath = path.join(distDir, file);
+
+      if (file.endsWith('.pdf')) {
+        await fs.copyFile(sourcePath, destPath);
+        console.log(`Copied PDF file: ${file}`);
+        continue; // Skip to next file
+      }
+
+      // Process HTML files
       let content = await fs.readFile(sourcePath, 'utf-8');
 
       const defaultTitle = '🚀 Join The Sprint!';
       const defaultDescription = '🔥 Your 24-hour challenge for online success! 💰';
 
-      // Extract title and description
       const titleMatch = content.match(/<title>(.*?)<\/title>/);
       const descriptionMatch = content.match(/<meta name="description" content="(.*?)">/);
 
-      let title = (titleMatch ? titleMatch[1] : defaultTitle);
-      let description = (descriptionMatch ? descriptionMatch[1] : defaultDescription);
+      let title = titleMatch ? titleMatch[1] : defaultTitle;
+      let description = descriptionMatch ? descriptionMatch[1] : defaultDescription;
 
-      // Auto-compose share text for index.html
       if (file === 'index.html') {
-        const pageTitleForShare = titleMatch ? titleMatch[1] : "the 24-Hour Challenge";
+        // Update the cheat sheet link to be local
+        content = content.replace(
+          /const CHEAT_SHEET_PDF_LINK = ".*";/,
+          `const CHEAT_SHEET_PDF_LINK = "/cheat-sheet.pdf";`
+        );
+
+        const pageTitleForShare = titleMatch ? titleMatch[1] : 'the 24-Hour Challenge';
         const newShareText = `Just accepted the FREE '${pageTitleForShare}'. Who wants to join me and see if it's real? 💪 #24HourChallenge`;
         content = content.replace(
           /const SHARE_TEXT = ".*";/,
@@ -50,18 +63,13 @@ async function build() {
         );
       }
 
-      // Add emojis to title and description if not already present (simple check)
-      if (!/\p{Emoji}/u.test(title)) title = `🚀 ${title}`; // Add rocket emoji
-      if (!/\p{Emoji}/u.test(description)) description = `🔥 ${description} 💰`; // Add fire and money bag emojis
+      if (!/\p{Emoji}/u.test(title)) title = `🚀 ${title}`;
+      if (!/\p{Emoji}/u.test(description)) description = `🔥 ${description} 💰`;
 
-      // Generate OG tags
       const pageUrl = `${baseUrl}/${file.replace('.html', '')}`;
-      
-      // Prepare image text for two lines and Anton font
       const imageTextLine1 = title.length > 30 ? title.substring(0, title.lastIndexOf(' ', 30)) : title;
       const imageTextLine2 = title.length > 30 ? title.substring(title.lastIndexOf(' ', 30) + 1) : 'Click to Discover!';
       const encodedImageText = encodeURIComponent(`${imageTextLine1}\n${imageTextLine2}`);
-
       const imageUrl = `https://placehold.co/1200x630/000000/FFFFFF/png?text=${encodedImageText}&font=Anton`;
 
       const ogTags = `
@@ -75,29 +83,29 @@ async function build() {
         <!-- End Open Graph Tags -->
       `;
 
-      // Inject OG tags before </head>
       const newContent = content.replace(/<\/head>/, `${ogTags}\n</head>`);
-      
-      const destPath = path.join(distDir, file);
       await fs.writeFile(destPath, newContent);
     }
     console.log('Successfully processed and injected OG tags into HTML files.');
 
     // 4. Generate the worker file (index.js)
-    const imports = htmlFiles.map(file => {
-      const name = file.replace('.html', 'Html');
+    const imports = processableFiles.map(file => {
+      const name = file.replace(/\.|\-/g, '_');
       return `import ${name} from './../dist/${file}';`;
     }).join('\n');
 
-    const pages = htmlFiles.map(file => {
-      const name = file.replace('.html', 'Html');
+    const routes = processableFiles.map(file => {
+      const name = file.replace(/\.|\-/g, '_');
       const route = `/${file.replace('.html', '')}`;
+      const contentType = file.endsWith('.pdf') ? 'application/pdf' : 'text/html';
       
+      let routeEntry = `  '${route}': { content: ${name}, contentType: '${contentType}' }`;
+
       if (route === '/index') {
-        return `  '/' : ${name},
-  '${route}': ${name}`;
+        routeEntry += `,
+  '/': { content: ${name}, contentType: '${contentType}' }`;
       }
-      return `  '${route}': ${name}`;
+      return routeEntry;
     }).join(',\n');
 
     const workerCode = `
@@ -105,8 +113,8 @@ async function build() {
 
 ${imports}
 
-const pages = {
-${pages}
+const routes = {
+${routes}
 };
 
 export default {
@@ -121,10 +129,10 @@ export default {
       path = '/index';
     }
 
-    const html = pages[path];
+    const route = routes[path];
 
-    if (html) {
-      return new Response(html, { headers: { 'Content-Type': 'text/html' } });
+    if (route) {
+      return new Response(route.content, { headers: { 'Content-Type': route.contentType } });
     }
 
     return new Response('Not Found', { status: 404 });
