@@ -277,10 +277,29 @@
         // Facebook share link setup
         facebookShare.addEventListener('click', (e) => {
             e.preventDefault();
-            // Copy the text first, as Facebook's 'quote' param is unreliable
             copyToClipboard(SHARE_TEXT);
-            const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SHARE_URL)}`;
-            openSharePopup(url);
+
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            const facebookAppUrl = `fb://sharer/link?href=${encodeURIComponent(SHARE_URL)}`;
+            const facebookWebUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SHARE_URL)}`;
+
+            if (isMobile) {
+                // On mobile, try to open the app first.
+                window.location.href = facebookAppUrl;
+
+                // Set a timeout to fallback to the web URL if the app doesn't open.
+                // This is a common trick, as there's no direct way to know if the app opened.
+                setTimeout(() => {
+                    // If the user is still on our page after a short delay,
+                    // it means the app probably didn't open, so we open the web popup.
+                    if (!document.hidden) {
+                        openSharePopup(facebookWebUrl);
+                    }
+                }, 2500); // 2.5 seconds delay
+            } else {
+                // On desktop, just open the web popup.
+                openSharePopup(facebookWebUrl);
+            }
         });
 
         // Twitter share link setup
